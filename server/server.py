@@ -8,6 +8,7 @@ from websockets.asyncio.server import serve
 
 HOST = "127.0.0.1"
 PORT = 8765
+MAX_CLIENTS = 50
 
 COLORS = [
     "#B6FF4A", "#45C8FF", "#FF426D", "#B388FF",
@@ -98,6 +99,13 @@ async def handler(websocket):
         if not username or len(username) > 24:
             await websocket.close(
                 code=1008, reason="Pseudo invalide"
+            )
+            return
+        
+        if len(clients) >= MAX_CLIENTS:
+            await websocket.close(
+                code=1013,
+                reason="Serveur complet : maximum 50 utilisateurs."
             )
             return
 
