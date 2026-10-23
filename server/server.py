@@ -1,7 +1,7 @@
-
 import asyncio
 import json
 import secrets
+from datetime import datetime
 
 import websockets
 from websockets.asyncio.server import serve
@@ -9,6 +9,12 @@ from websockets.asyncio.server import serve
 HOST = "127.0.0.1"
 PORT = 8765
 MAX_CLIENTS = 50
+
+
+def timestamp():
+    """Retourne la date et l'heure locales avec les millisecondes."""
+    return datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")[:-3]
+
 
 COLORS = [
     "#B6FF4A", "#45C8FF", "#FF426D", "#B388FF",
@@ -138,10 +144,9 @@ async def handler(websocket):
         }))
 
         print(
-            f"[+] {username} connecté ({color}). "
+            f"[{timestamp()}] [+] {username} connecté ({color}). "
             f"Total : {len(clients)}"
         )
-
         await broadcast_system("join", username=username)
 
         async for raw_message in websocket:
@@ -358,10 +363,9 @@ async def handler(websocket):
             used_colors.pop(info["id"], None)
 
             print(
-                f"[-] {info['username']} déconnecté. "
+                f"[{timestamp()}] [-] {info['username']} déconnecté. "
                 f"Total : {len(clients)}"
             )
-
             await broadcast_system(
                 "leave",
                 username=info["username"],
