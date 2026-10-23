@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import json
 import secrets
@@ -372,14 +373,19 @@ async def handler(websocket):
                 color=info["color"],
             )
 
-async def main():
-    async with serve(handler, HOST, PORT):
-        print(f"[NOXCHAT] Serveur actif sur ws://{HOST}:{PORT}")
+async def main(host, port):
+    async with serve(handler, host, port):
+        print(f"[NOXCHAT] Serveur actif sur ws://{host}:{port}")
         await asyncio.Future()
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Serveur NOXCHAT")
+    parser.add_argument("--host", default=HOST, help="Adresse d'écoute")
+    parser.add_argument("--port", type=int, default=PORT, help="Port d'écoute")
+    args = parser.parse_args()
+
     try:
-        asyncio.run(main())
+        asyncio.run(main(args.host, args.port))
     except KeyboardInterrupt:
         print("\n[NOXCHAT] Serveur arrêté.")
