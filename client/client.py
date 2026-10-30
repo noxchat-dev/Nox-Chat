@@ -262,23 +262,6 @@ async def send_messages(ws, key):
 
 
 async def main():
-    server_address = input(
-        "Adresse du serveur [127.0.0.1] : "
-    ).strip() or "127.0.0.1"
-
-    server_port_text = input(
-        "Port du serveur [8765] : "
-    ).strip() or "8765"
-
-    try:
-        server_port = int(server_port_text)
-        if not 1 <= server_port <= 65535:
-            raise ValueError
-    except ValueError:
-        print("[ERREUR] Le port doit être un nombre entre 1 et 65535.")
-        return
-
-async def main():
     if len(sys.argv) > 2:
         print('Usage : python -m client.client ["URL_SERVEUR"]')
         return
@@ -371,7 +354,6 @@ async def main():
                 f"NOXCHAT — Connecté comme "
                 f"{username_color}{username}{RESET}"
             )
-            print("Tape /quit pour quitter.\n")
             print("Tape /quit pour quitter.\n")
 
             receiver = asyncio.create_task(
