@@ -1,13 +1,21 @@
-
+import argparse
 import asyncio
 import json
 import secrets
+from datetime import datetime
 
 import websockets
 from websockets.asyncio.server import serve
 
 HOST = "127.0.0.1"
 PORT = 8765
+MAX_CLIENTS = 50
+
+
+def timestamp():
+    """Retourne la date et l'heure locales avec les millisecondes."""
+    return datetime.now().strftime("%d/%m/%Y %H:%M:%S.%f")[:-3]
+
 
 COLORS = [
     "#B6FF4A", "#45C8FF", "#FF426D", "#B388FF",
@@ -100,6 +108,13 @@ async def handler(websocket):
                 code=1008, reason="Pseudo invalide"
             )
             return
+        
+        if len(clients) >= MAX_CLIENTS:
+            await websocket.close(
+                code=1013,
+                reason="Serveur complet : maximum 50 utilisateurs."
+            )
+            return
 
         active_names = {
             info["username"].casefold()
@@ -130,10 +145,9 @@ async def handler(websocket):
         }))
 
         print(
-            f"[+] {username} connecté ({color}). "
+            f"[{timestamp()}] [+] {username} connecté ({color}). "
             f"Total : {len(clients)}"
         )
-
         await broadcast_system("join", username=username)
 
         async for raw_message in websocket:
@@ -350,24 +364,28 @@ async def handler(websocket):
             used_colors.pop(info["id"], None)
 
             print(
-                f"[-] {info['username']} déconnecté. "
+                f"[{timestamp()}] [-] {info['username']} déconnecté. "
                 f"Total : {len(clients)}"
             )
-
             await broadcast_system(
                 "leave",
                 username=info["username"],
                 color=info["color"],
             )
 
-async def main():
-    async with serve(handler, HOST, PORT):
-        print(f"[NOXCHAT] Serveur actif sur ws://{HOST}:{PORT}")
+async def main(host, port):
+    async with serve(handler, host, port):
+        print(f"[NOXCHAT] Serveur actif sur ws://{host}:{port}")
         await asyncio.Future()
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Serveur NOXCHAT")
+    parser.add_argument("--host", default=HOST, help="Adresse d'écoute")
+    parser.add_argument("--port", type=int, default=PORT, help="Port d'écoute")
+    args = parser.parse_args()
+
     try:
-        asyncio.run(main())
+        asyncio.run(main(args.host, args.port))
     except KeyboardInterrupt:
         print("\n[NOXCHAT] Serveur arrêté.")

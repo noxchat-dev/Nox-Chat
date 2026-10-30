@@ -1,26 +1,29 @@
-
-# Clés secrètes
+# Secrets and private keys
 .noxchat.key
 *.key
-
-# Python
-__pycache__/
-*.pyc
-
-# Environnement virtuel
-.venv/
-
-# Variables d'environnement et secrets
 .env
 .env.*
 !.env.example
 
-# Tests et outils
+# Python
+__pycache__/
+*.py[cod]
+.venv/
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Éditeurs
+# Backup files
+*.bak
+*.bak.*
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Editors and operating systems
 .vscode/
 .idea/
-*.bak
+.DS_Store
+Thumbs.db

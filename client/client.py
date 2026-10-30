@@ -1,7 +1,7 @@
-
 import asyncio
 import base64
 import json
+import sys
 from datetime import datetime
 from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosed
@@ -262,6 +262,54 @@ async def send_messages(ws, key):
 
 
 async def main():
+    if len(sys.argv) > 2:
+        print('Usage : python -m client.client ["URL_SERVEUR"]')
+        return
+
+    if len(sys.argv) == 2:
+        server_uri = sys.argv[1].strip()
+
+        if server_uri.startswith("https://"):
+            server_uri = "wss://" + server_uri[len("https://"):]
+
+        elif server_uri.startswith("http://"):
+            server_uri = "ws://" + server_uri[len("http://"):]
+
+        elif not server_uri.startswith(("ws://", "wss://")):
+            print(
+                "[ERREUR] Utilise une adresse "
+                "ws://, wss://, http:// ou https://."
+            )
+            return
+
+        if not server_uri.split("://", 1)[1]:
+            print("[ERREUR] Adresse du serveur vide.")
+            return
+
+    else:
+        server_address = input(
+            "Adresse du serveur [127.0.0.1] : "
+        ).strip() or "127.0.0.1"
+
+        server_port_text = input(
+            "Port du serveur [8765] : "
+        ).strip() or "8765"
+
+        try:
+            server_port = int(server_port_text)
+
+            if not 1 <= server_port <= 65535:
+                raise ValueError
+
+        except ValueError:
+            print(
+                "[ERREUR] Le port doit être un nombre "
+                "entre 1 et 65535."
+            )
+            return
+
+        server_uri = f"ws://{server_address}:{server_port}"
+
     username = input("Choisis ton pseudo NOXCHAT : ").strip()
 
     if not username or len(username) > 24:
@@ -275,7 +323,7 @@ async def main():
     print("\n[NOXCHAT] Connexion au serveur...")
 
     try:
-        async with connect(SERVER_URI) as ws:
+        async with connect(server_uri) as ws:
             # Présenter le pseudo au serveur.
             await ws.send(
                 json.dumps({
@@ -306,7 +354,6 @@ async def main():
                 f"NOXCHAT — Connecté comme "
                 f"{username_color}{username}{RESET}"
             )
-            print("Tape /quit pour quitter.\n")
             print("Tape /quit pour quitter.\n")
 
             receiver = asyncio.create_task(
